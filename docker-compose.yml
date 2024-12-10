@@ -1,0 +1,33 @@
+services:
+  api:
+    build: ./backend
+    command: npm run start
+    environment:
+      - PORT=5174
+      - MONGO_URI=mongodb://api_db:27017/api
+    depends_on:
+      - api_db
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile.prod
+    command: npm run preview -- --port 5173
+    depends_on:
+      - api
+  api_db:
+    image: mongo:4.4.0
+    volumes:
+      - mongodb_api:/data/db
+  nginx:
+    image: nginx:1-alpine
+    container_name: web-users-nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/conf.d/nginx.conf
+    depends_on:
+      - frontend
+      - api
+
+volumes:
+  mongodb_api:
